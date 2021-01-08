@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html>
+	<head>     
+		<style type="text/css">
+		#rectangle{
+			fill: #3399ff;
+			stroke: black;
+		}
+		
+		#circle{
+			fill: red;
+			stroke: black;
+		}
+
+		#triangle{
+			fill: orange;
+			stroke: black;
+		}
+		</style>   
+	</head>   
+
+	<body>  
+	
+		<svg width="600" height="800">
+		
+		<text x="30" y="30" font-size="24" fill="orange">Michael Mulholland</text>
+		
+		<rect id="rectangle" x="50" y="120" width="200" height="120"/>
+
+		<circle id="circle" cx="150" cy="120" r="40"/>
+		
+		
+		<polygon id="triangle" points="350 120, 420 250, 280 250"/>		
+	
+		<!--drawing the pacman-->
+		<path id="arc1" fill="yellow" stroke="black" stroke-width="5" />		
+		<circle cx="290" cy="350" r="10"/>
+
+		</svg>	
+				
+		<script type="text/javascript">
+				
+		// draw the arc of pacman
+		function drawArc(x, y, radius, startAngle, endAngle){
+			var start = polarToCartesian(x, y, radius, endAngle + x);
+			var end = polarToCartesian(x, y, radius, startAngle + y);
+
+			var d = [
+				"M", start.x, start.y, 
+				"A", radius, radius, 0, 1, 0, end.x, end.y,
+				"L", x,y,
+				"L", start.x, start.y-3
+			].join(" ");
+
+			return d;       
+		}
+		
+		function polarToCartesian(xPos, yPos, radius, angleInDegrees) {
+		  var angleInRadians = (angleInDegrees) * Math.PI / 180.0;
+
+		  return {
+			x: xPos + (radius * Math.cos(angleInRadians)),
+			y: yPos + (radius * Math.sin(angleInRadians))
+		  };
+		}
+		
+		document.getElementById("arc1").setAttribute("d", drawArc(300, 400, 100, 7/4 * Math.PI, Math.PI/4));
+
+		var circle = document.getElementById("circle");
+		
+		function moveCircle(){
+			circle.setAttribute("cx", 200);
+			circle.setAttribute("cy", 120);
+		}
+	
+		function changeColour(){
+			circle.style.fill="green";
+		}
+		
+		setTimeout(moveCircle, 1000);
+		
+		setTimeout(changeColour, 2000);
+
+		</script>   
+	</body> 
+</html>

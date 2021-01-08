@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>  
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+
+	<head>     
+		<meta charset="UTF-8">
+	</head>   
+	<body>     
+		<script type="text/javascript">   
+		
+			// variables
+			var ballSpeedZ;
+			var xVel = 0.2;
+			var zVel = 0.2;
+			var yVel = 0.2;
+			var newColour = 0;
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+			camera.position.set(0,-40,15);
+			camera.lookAt(0,0,0);
+						
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			document.body.appendChild(renderer.domElement);
+	
+			var geometry = new THREE.SphereGeometry( 3, 20, 20);
+			var material = new THREE.MeshLambertMaterial( {color: 0xFFA500, wireframe:false} );
+			var sphere = new THREE.Mesh( geometry, material);
+			sphere.castShadow = true;
+			scene.add( sphere );
+			
+			var geometry = new THREE.SphereGeometry( 4, 20, 20);
+			var material = new THREE.MeshLambertMaterial( {color: 0xFFA500, wireframe:true} );
+			var sphereWire = new THREE.Mesh( geometry, material);
+			sphereWire.castShadow = true;
+			scene.add( sphereWire );
+			
+			var geometry = new THREE.BoxGeometry( 5, 5, 5);
+			var material = new THREE.MeshLambertMaterial( {color: 0xFFA500, wireframe:false} );
+			var cube = new THREE.Mesh( geometry, material);
+	
+			cube.position.z = -5;
+			scene.add(cube);
+
+			// add a light source, colour, position and add it to the scene
+			var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+			directionalLight.position.set(40, 0, 50);
+			directionalLight.target = scene;
+			directionalLight.castShadow = true;
+			scene.add(directionalLight);
+			
+			// add a light source, colour, position and add it to the scene
+			var spotLight = new THREE.SpotLight(0xffffff);
+			spotLight.position.set(0,40,40);
+			spotLight.castShadow = true;
+			scene.add(spotLight);
+	
+			var geometryPlane = new THREE.PlaneGeometry(40,40,32);
+			var material = new THREE.MeshLambertMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+			var plane = new THREE.Mesh( geometryPlane, material );
+			// set x, y, z
+			plane.position.set(0, 0, -10);
+			plane.receiveShadow = true;
+			scene.add( plane );
+			
+			var directionalLightHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+			
+			var spotLightHelper = new THREE.CameraHelper(spotLight.shadow.camera);
+
+			// repeatme - render loop
+			var repeatme = function(){
+				renderer.render(scene,camera);
+				
+				// function calls to rotate Sphere, move sphere, // change the colour of the sphere
+				rotate();
+				moveSphere();	
+				changeColour();
+				
+				requestAnimationFrame(repeatme);
+			}
+							
+			function rotate(){
+				// rotate sphere and sphereWire
+				sphere.rotateX(Math.PI/180);
+				sphere.rotateY(Math.PI/180);
+				sphereWire.rotateX(Math.PI/180);
+				sphereWire.rotateY(Math.PI/180);					
+			}
+						
+			function moveSphere(){
+				sphere.position.x += xVel;
+				sphere.position.z += zVel;
+				
+				// variable to help create bouncing sphere
+				zVel -= 0.01;
+
+				// if true - move sphere to the left
+				if(sphere.position.x > 15){
+					xVel =- xVel;
+				}
+				
+				// if true - move sphere to the right
+				if(sphere.position.x < -15){
+					xVel =- xVel;
+				}
+
+				// if true - move sphere upwards
+				if(sphere.position.y > 15){
+					yVel =- yVel;
+				}
+				
+				// if true - move sphere downwards
+				if(sphere.position.y < -15){
+					yVel =- yVel;
+				}
+								
+				// sphere position z plus half the radius <= plane position z
+				// make the sphere bounce
+				if((sphere.position.z - 1.5) <= plane.position.z){
+					zVel = -(zVel*.98);
+				}
+				
+				// set the sphereWire to sphere
+				sphereWire.position.x = sphere.position.x;
+				sphereWire.position.z = sphere.position.z;
+			}
+			
+
+			function changeColour(){
+				// hsl string - red, green, blue
+				sphere.material.color.setStyle("hsl(" + newColour + ", 90%, 60%)");
+				newColour = newColour + 0.2;
+			}
+			
+			repeatme();
+			
+		</script>  	
+	</body> 
+</html> 

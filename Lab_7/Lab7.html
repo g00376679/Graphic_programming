@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>D3.js </title>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <meta charset="UTF-8">
+    <style type="text/css">
+     
+        
+
+    </style>
+</head>
+
+<body>
+    <h1>Lab7</h1>
+    <h2>GBP/EUR over time </h2>
+    <script type="text/javascript">
+
+        //get data from jsonblob
+        $.getJSON("https://jsonblob.com/api/c607a984-27a5-11eb-9205-ef94025b9318", function (data) {
+
+            //then printing into  console 
+            console.log(data);
+
+            //cal the plotCurrencyData  fucntion and passing the  data
+            plotCurrencyData(data);
+
+        })//end of read data
+
+        //take array of data then plot the graphic
+        function plotCurrencyData(data) {
+
+            //set boundaries
+            var margin = { top: 50, right: 50, bottom: 50, left: 100 };
+            var canvasSize = { width: 900, height: 670 };
+            var width = canvasSize.width - margin.left - margin.right;
+            var height = canvasSize.height - margin.top - margin.bottom;
+
+            //creating the svg
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .call(d3.zoom().on("zoom", zoomed)) 
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            //create a date parse
+            var parseDate = d3.timeParse("%d/%m/%Y");
+
+            //set x data axis parsing date data
+            var x = d3.scaleTime().domain(d3.extent(data, function (d) {
+
+                return parseDate(d["Date"]);
+
+            })).range([0, width]);
+
+            //y scale
+            var y = d3.scaleLinear().domain(d3.extent(data, function (d) {
+                return d["GBP/EUR"]
+            })).range([height, 0]);
+
+            //set line 
+            var line = d3.line()
+                .x(function (d) { return x(parseDate(d["Date"])); })
+                .y(function (d) { return y(d["GBP/EUR"]); })
+                .curve(d3.curveBasis);
+
+            ///line group for zoom
+            var lineGroup = svg.append("g")
+            //add path and set blue color
+            var linePath = lineGroup.append("path").attr("d", line(data)).attr("stroke", "blue").attr("fill", "none");
+            
+            //y axis set ticks
+            var yAxis = d3.axisLeft(y).ticks(5);
+            var yAxisGroup = svg.append("g").call(yAxis);
+
+            //x axis set ticks
+            var xAxis = d3.axisBottom(x).ticks(10);
+            var xAxisGroup = svg.append("g").call(xAxis).attr("transform", "translate(0," + height + ")");
+
+            //add label for x axis and y axis
+            svg.append("text").text("GB/EUR")
+                .attr("x", 0 - height / 2)
+                .attr("y", 0 - margin.left)
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .attr("transform", "rotate(-90)");
+            svg.append("text").text("Date")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom)
+                .style("text-anchor", "middle");
+
+            //add zoom fct
+            var zoom = d3.zoom()
+                .scaleExtent([1, 30])// less than 1 means can resize smaller than  original size
+                .translateExtent([[-width, -height], [2 * width, 2 * height]])
+                .on("zoom", zoomed);
+
+            //zoom function
+            function zoomed() {
+                //zoom line
+                linePath.attr("transform", d3.event.transform);
+                //zoom x axis
+                xAxisGroup.call(xAxis.scale(d3.event.transform.rescaleX(x)));
+                
+
+            }
+
+
+            //limit the graph to boundaris when zoming
+            d3.select("svg").append("defs").append("clipPath").attr("id", "clip")
+                .append("rect").attr("width", width).attr("height", height);
+            lineGroup.attr("clip-path", "url(#clip)");
+
+        }
+    </script>
+</body>
+
+</html>
